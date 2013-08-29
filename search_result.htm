@@ -8,14 +8,18 @@
 <div>
 	<div>
 		<div><I><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result Display ${display}</h3></I></div>
-		<div><a href="searching.php" title="Back">Back to Search Page</a></div>
+		<div><a href="searching.php"> Back Search Screen of Winestore </a></div>
 		<div>
 			<!-- print error  -->
 		<!--	if(!$result) echo "<div class='noResult'>No records match your search criteria.</div>";
 			else 
-			-->		
+			-->
 			
+			<!--here to print the error info if there is no result match from searching.php-->
+				${error_info}
 			<table>
+				
+			
 			<!-- the first row in result table -->
 				<tr>
 					<th>Wine Name</th>
@@ -29,15 +33,14 @@
 					<th>Total<br/>Sales Revenue</tr>
 				
 				
+				
 				<!-- the print info row -->
 				<!-- $BeginBlock printinfo -->
 				<tr>
 				
 				<td>${wineName}</td>
 				
-				<td style="line-height: 16px">
-					${grape_variety}
-				</td>
+				<td>${grape_variety}</td>
 				
 				<td>${year}</td>
 				
