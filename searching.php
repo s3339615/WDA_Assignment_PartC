@@ -17,6 +17,7 @@
 		exit;
 	}
 	
+
 	
 	//echo 'Connected to database <br /> ' . DB_NAME . '\n'; //check whether connect to database
 	
@@ -52,6 +53,7 @@
 	//	echo '  4 region names <br />' . $region_names . '\n';
 	//	echo '  haha region row print <br />' . $row . '\n';
 	}
+	
 	//echo '  1 region_ids <br />' .$region_ids . '\n';
 	//echo '  2 region names <br />' . $region_names . '\n';
 	//$template->setVariable("region_ids", $region_ids);
@@ -61,9 +63,8 @@
 
     /*query for get the years from database*/
     $query = 'SELECT DISTINCT year FROM wine ORDER BY year';
-	$year_ids = array();
+	//$year_ids = array();
 	$year_names = array();
-	$x = 0;
     $years = mysql_query($query, $dbconn);
     while($row = mysql_fetch_row($years))
 	{
@@ -73,7 +74,7 @@
     }
 	
     mysql_close($dbconn);
-    echo error_get_last();
+    //echo error_get_last();
 	
 	$template->generateOutput();
 ?>
