@@ -1,5 +1,5 @@
 <?php
-
+	//error_reporting( E_ALL ); //error message
     $criteria = $_GET["criteria"];//all = no criteria; some = some criterias
     $winename = $_GET["winename"];
     $wineryname = $_GET["wineryname"];
@@ -12,30 +12,41 @@
     $min_cost = $_GET["min_cost"];
     $max_cost = $_GET["max_cost"];
 	
+	//check the validation of cost
+	if($max_cost < $min_cost)
+	{
+		echo 'Wrong Input!';
+		die();
+	}
+	
+	//check the validation of year
+	if($yearFrom > $yearTo)
+	{
+		echo 'Wrong Input!';
+		die();
+	}
+	
 //    echo 'here 1</br>';
 	
-    $query = 'SELECT DISTINCT wine.wine_id, wine_name, year, winery_name, region_name, cost, on_hand, SUM(qty) qty, SUM(price)
+    $query = 'SELECT DISTINCT wine.wine_id, wine_name, year, region_name, winery_name, cost, on_hand, SUM(qty) qty, SUM(price)
               FROM wine, winery, region, inventory, items, wine_variety
               WHERE wine.winery_id = winery.winery_id AND
-                    winery.region_id = region.region_id AND
-                    wine.wine_id = inventory.wine_id AND
+					wine.wine_id = inventory.wine_id AND
                     wine.wine_id = items.wine_id AND
+                    winery.region_id = region.region_id AND
                     wine.wine_id = wine_variety.wine_id';
 					
 //    echo 'here 2</br>';
-	
+	//query for all the data
     if($criteria == 'all') 
-	{// Query all data
+	{
         $query .= ' GROUP BY items.wine_id
-                    ORDER BY wine_name, year
-                    LIMIT 200';
+                    ORDER BY wine_name, year';
     }
 	//echo 'here 3</br>';
     else 
-	{// Query part of data
-        /*
-            Piece together the SQL statement
-        */
+	{
+	//set together with some other sql
         if($winename != '') 
 		{
             $winename = str_replace("'", "''", $winename);
@@ -112,39 +123,44 @@
 		{
             $query .= " GROUP BY items.wine_id
                         HAVING qty >= $min_num_ordered
-                        ORDER BY wine_name, year LIMIT 200";
+                        ORDER BY wine_name, year";
         }
 		
 	//	echo 'here 14</br>';
 		
         else $query .= ' GROUP BY items.wine_id
-                         ORDER BY wine_name, year LIMIT 200';
+                         ORDER BY wine_name, year';
 						 
     //    echo 'here 15</br>';
 		
-    //    echo $query . '</br>' ;
+    //    echo $query . '</br>' ; //debug info
 		
 	//	echo 'here 16</br>';
 		
     }
 	//	echo 'here 17</br>';
 	//	echo $query . '</br>' ;	
-		
+	
+	/*
+	* start connect to the winestore database
+	* start use the MiniTemplator
+	*/
 	require_once('MiniTemplator.class.php');	
     require_once('database.php');
 	
+	//new the MiniTemplator and read the search_result.htm
 	$template = new MiniTemplator;
 	if (!$template->readTemplateFromFile("search_result.htm")) die ("MiniTemplator.readTemplateFromFile failed.");
-	echo 'Connected to search_result.htm <br />';
+	//echo 'Connected to search_result.htm <br />';
 	
-	$template->setVariable("display", "test the info");
+	//$template->setVariable("display", "test the info");
 	
 	if(!$dbconn = mysql_connect(DB_HOST, DB_USER, DB_PW))
 	{
 		echo 'Could not connect to mysql on ' . DB_HOST . '\n';
 		exit;
 	}
-	echo 'Connected to mysql <br />';
+	//echo 'Connected to mysql <br />';
 
 	if(!mysql_select_db(DB_NAME, $dbconn)) 
 	{
@@ -152,7 +168,7 @@
 		echo mysql_error() . '\n';
 		exit;
 	}
-	echo 'Connected to database ' . DB_NAME . '\n';
+	//echo 'Connected to database ' . DB_NAME . '\n';
     
     $result = mysql_query($query, $dbconn);
     if(!$result) 
@@ -160,6 +176,12 @@
         echo "Wrong query string! [$query]";
         exit;
     }
+	
+	//$error_info = array();
+	if(mysql_num_rows($result) == 0)
+	{
+		$template->setVariable("error_info", "No records match your search criteria.");
+	}
 	
 	//print the selected by searching.php
 	//echo $query . '</br>' ;	
@@ -181,19 +203,17 @@
 	//	echo 'while 2 </br>';
 		
         $str = "";
-		
+		//it may get the other grape variety with same id
         while($variety = mysql_fetch_row($varieties)) 
 		{
             $str .= "$variety[0], ";
-			
 	//		echo $variety . 'varitery print</br>';
-			
 	//		echo 'while 3 </br>';
 			
         }
 	//	echo $row . 'row 2</br>';
 		
-		$grape_variety = substr($str, 0, strlen($str));
+		$grape_variety = substr($str, 0, strlen($str)-2);
 		
 	//	echo 'while 4 </br>';
 		
@@ -230,7 +250,7 @@
 	
 	
     mysql_close($dbconn);
-    echo error_get_last();
+    //echo error_get_last();
 	
 	$template->generateOutput();
 	
